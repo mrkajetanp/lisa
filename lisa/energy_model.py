@@ -951,11 +951,11 @@ class LinuxEnergyModel(EnergyModel):
 
     @staticmethod
     def probe_target(target):
-        directory = '/sys/kernel/debug/energy_model'
+        directory = '/sys/kernel/energy_model'
         return target.file_exists(directory)
 
     @classmethod
-    def from_target(cls, target, directory='/sys/kernel/debug/energy_model'):
+    def from_target(cls, target, directory='/sys/kernel/energy_model'):
         """
         Create an :class:`EnergyModel` by reading a target filesystem on a
         device with the new Simplified Energy Model present in debugfs.
