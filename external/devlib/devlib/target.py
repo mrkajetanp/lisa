@@ -1770,6 +1770,7 @@ class AndroidTarget(Target):
                  shell_prompt=DEFAULT_SHELL_PROMPT,
                  conn_cls=AdbConnection,
                  package_data_directory="/data/data",
+                 persistent_data_path="/storage/emulated/0/Android/data",
                  is_container=False,
                  max_async=50,
                  ):
@@ -1785,6 +1786,7 @@ class AndroidTarget(Target):
                                             is_container=is_container,
                                             max_async=max_async)
         self.package_data_directory = package_data_directory
+        self.persistent_data_path = persistent_data_path
         self._init_logcat_lock()
 
     def _init_logcat_lock(self):
