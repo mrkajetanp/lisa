@@ -180,6 +180,7 @@ class ApkWorkload(Workload):
     activity = None
     view = None
     clear_data_on_reset = True
+    apk_arguments = {}
 
     # Set this to True to mark that this workload requires the target apk to be run
     # for initialisation purposes before the main run is performed.
@@ -289,7 +290,8 @@ class ApkWorkload(Workload):
                                   clear_data_on_reset=self.clear_data_on_reset,
                                   activity=self.activity,
                                   min_version=self.min_version,
-                                  max_version=self.max_version)
+                                  max_version=self.max_version,
+                                  apk_arguments=self.apk_arguments)
 
     def validate(self):
         if self.min_version and self.max_version:
@@ -686,7 +688,7 @@ class PackageHandler(object):
     def __init__(self, owner, install_timeout=300, version=None, variant=None,
                  package_name=None, strict=False, force_install=False, uninstall=False,
                  exact_abi=False, prefer_host_package=True, clear_data_on_reset=True,
-                 activity=None, min_version=None, max_version=None):
+                 activity=None, min_version=None, max_version=None, apk_arguments= {}):
         self.logger = logging.getLogger('apk')
         self.owner = owner
         self.target = self.owner.target
@@ -709,6 +711,7 @@ class PackageHandler(object):
         self.apk_version = None
         self.logcat_log = None
         self.error_msg = None
+        self.apk_arguments = apk_arguments
 
     def initialize(self, context):
         self.resolve_package(context)
@@ -853,11 +856,12 @@ class PackageHandler(object):
         self.apk_version = host_version
 
     def start_activity(self):
+        apk_args = self._build_apk_args(self.apk_arguments)
         if not self.activity:
-            cmd = 'am start -W {}'.format(self.apk_info.package)
+            cmd = 'am start -W {} {}'.format(self.apk_info.package, apk_args)
         else:
-            cmd = 'am start -W -n {}/{}'.format(self.apk_info.package,
-                                                self.activity)
+            cmd = 'am start -W -n {}/{} {}'.format(self.apk_info.package,
+                                                   self.activity, apk_args)
         output = self.target.execute(cmd)
         if 'Error:' in output:
             # this will dismiss any error dialogs
@@ -921,6 +925,21 @@ class PackageHandler(object):
         return msg.format(version=self.version, min_version=self.min_version,
                           max_version=self.max_version, location=location)
 
+    def _build_apk_args(self, apk_arguments):
+        args_string = ''
+        for k, v in apk_arguments.items():
+            if isinstance(v, str):
+                arg = '--es'
+            elif isinstance(v, float):
+                arg = '--ef'
+            elif isinstance(v, bool):
+                arg = '--ez'
+            elif isinstance(v, int):
+                arg = '--ei'
+            else:
+                raise ValueError('Unable to encode {} {}'.format(v, type(v)))
+            args_string = '{} {} {} "{}"'.format(args_string, arg, k, v)
+        return args_string
 
 class TestPackageHandler(PackageHandler):
     """Class wrapping an APK used through ``am instrument``.
