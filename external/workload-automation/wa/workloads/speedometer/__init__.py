@@ -117,8 +117,9 @@ class Speedometer(Workload):
             default="com.android.chrome",
             description="""
                   The app package for the browser that will be launched.
-                  """,
-        ),
+                  """),
+        Parameter('clean_cache', kind=bool, default=True,
+                  description="Clean Chrome cache between iterations")
     ]
 
     def __init__(self, target, **kwargs):
@@ -169,7 +170,8 @@ class Speedometer(Workload):
         # nothing in the page cache, etc.
 
         # Clear the application's cache.
-        self.target.execute("pm clear {}".format(self.chrome_package), as_root=True)
+        if self.clean_cache:
+            self.target.execute("pm clear {}".format(self.chrome_package), as_root=True)
 
         # Launch the browser for the first time and then stop it. Since the
         # cache has just been cleared, this forces it to recreate its
