@@ -17,6 +17,7 @@ sphinx:
 # Only build default HTML to save some build time
 formats: []
 
+# Configure the build environment
 build:
   os: ubuntu-22.04
   tools:
@@ -26,6 +27,9 @@ build:
     - plantuml
     - pandoc
 
+# Ensure doc dependencies are installed before building
 python:
-  install:
-    - requirements: doc/doc_requirements.txt
+   install:
+     - requirements: doc/requirements.txt
+     - method: pip
+       path: .
