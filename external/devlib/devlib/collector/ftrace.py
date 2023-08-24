@@ -302,6 +302,7 @@ class FtraceCollector(CollectorBase):
             )
             if self.bg_cmd is None:
                 self.bg_cmd = self.target.background(trace_cmd, as_root=True)
+                self.trace_cmd_pid = self.target.get_pids_of('trace-cmd')[0]
             else:
                 raise TargetStableError('ftrace collector is not re-entrant')
         else:
@@ -341,6 +342,7 @@ class FtraceCollector(CollectorBase):
         if self.automark:
             self.mark_stop()
         if self.trace_cmd_mode == 'record':
+            self.target.execute('{} kill -2 {}'.format(self.target.busybox, self.trace_cmd_pid), as_root=True)
             self.bg_cmd.send_signal(signal.SIGINT)
             self.bg_cmd = None
         else:
